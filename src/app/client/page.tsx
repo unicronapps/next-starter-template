@@ -12,8 +12,8 @@ export default function ClientPage() {
 
 	useEffect(() => {
 		fetch("/api/posts")
-			.then((r) => r.json())
-			.then((data: { posts: Post[] }) => setPosts(data.posts))
+			.then((r) => r.json() as Promise<{ posts: Post[] }>)
+			.then((data) => setPosts(data.posts))
 			.catch(() => setError("Failed to load posts"))
 			.finally(() => setLoading(false));
 	}, []);
