@@ -31,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return staticRoutes;
   }
 
-  const { posts } = await res.json();
+  const { posts }: any = await res.json();
 
   const dynamicRoutes = posts.map((post: any) => ({
     url: `${baseUrl}/post/${post.slug}`,

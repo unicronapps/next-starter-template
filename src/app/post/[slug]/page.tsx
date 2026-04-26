@@ -27,8 +27,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Not Found" };
   }
 
-  const { post } = await res.json();
-
+  const { post }: any = await res.json();
+  console.log(post);
   if (!post) {
     return { title: "Not Found" };
   }
@@ -84,7 +84,7 @@ async function getRelatedPosts(
     return [];
   }
 
-  const { posts } = await res.json();
+  const { posts }: any = await res.json();
   return posts ?? [];
 }
 
@@ -100,7 +100,8 @@ export default async function PostPage({ params }: Props) {
     `${process.env.API_BASE_URL}/api/post-by-slug?slug=${resolvedParams.slug}`,
     { next: { revalidate: 60 } },
   );
-  const { post } = await res.json();
+  const response: any = await res.json();
+  const post = response.post || null;
   if (!post) notFound();
 
   // Fetch Related Posts based on the current post's data

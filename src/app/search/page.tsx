@@ -18,7 +18,7 @@ async function searchPosts(query: string, options?: { revalidate?: number }) {
       ...(options?.revalidate
         ? { next: { revalidate: options.revalidate } }
         : { cache: "no-store" }),
-    }
+    },
   );
 
   if (!res.ok) {
@@ -26,7 +26,7 @@ async function searchPosts(query: string, options?: { revalidate?: number }) {
     return [];
   }
 
-  const data = await res.json();
+  const data: any = await res.json();
   return data.posts ?? [];
 }
 

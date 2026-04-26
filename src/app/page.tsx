@@ -1,388 +1,266 @@
 import Link from "next/link";
-import Image from "next/image";
 export const runtime = "edge";
 
-// 2. Data Fetcher
-async function getCategoryPosts(category: string, limit = 10) {
-  const params = new URLSearchParams({
-    category,
-    limit: String(limit),
-  });
-
+async function getCategoryPosts(category: string, limit = 15) {
+  const params = new URLSearchParams({ category, limit: String(limit) });
   const res = await fetch(
     `${process.env.API_BASE_URL}/api/category-posts/home?${params.toString()}`,
-    { cache: "no-store" } // we’ll handle caching via Cloudflare
+    { cache: "no-store" }
   );
-
-  if (!res.ok) {
-    return [];
-  }
-
-  const { posts } = await res.json();
+  if (!res.ok) return [];
+  const { posts } = await res.json() as { posts?: any[] };
   return posts ?? [];
 }
 
-// --- COMPONENTS ---
-
-// A. The "Sarkari Box" Column (Text Only - High Density)
-const SarkariColumn = ({
+// ── Reusable section box ──
+const SectionBox = ({
   title,
+  accentColor,
   posts,
   link,
+  mobileLimit = 8,
 }: {
   title: string;
+  accentColor: string;
   posts: any[];
   link: string;
+  mobileLimit?: number;
 }) => (
-  <div className="border-2 border-blue-900 rounded-lg overflow-hidden flex flex-col h-full bg-white shadow-sm">
-    <div className="bg-blue-900 text-white font-bold text-center py-2 text-lg uppercase  tracking-wide">
-      {title}
-    </div>
-    <div className="flex-grow p-0">
-      <ul className="divide-y divide-gray-200">
-        {posts.map((post) => (
-          <li key={post._id} className="group hover:bg-blue-50 transition">
-            <Link
-              href={`/post/${post.slug}`}
-              className="block px-3 py-3 text-sm font-semibold text-blue-700 leading-snug"
-            >
-              <span className="text-red-600 mr-2 text-xs">●</span>
-              <span className="group-hover:underline decoration-blue-700 underline-offset-2">
-                {post.title}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-    <div className="p-2 bg-gray-50 border-t border-gray-200">
+  <div
+    className="bg-white border border-gray-200 rounded-sm overflow-hidden shadow-sm"
+    style={{ fontFamily: "Arial, sans-serif" }}
+  >
+    {/* Section header */}
+    <div
+      className="flex items-center justify-between px-3 py-2"
+      style={{ background: accentColor, borderBottom: `3px solid rgba(0,0,0,0.15)` }}
+    >
+      <h2 className="text-white font-black text-sm uppercase tracking-wide m-0">{title}</h2>
       <Link
         href={link}
-        className="block w-full text-center bg-white border border-gray-300 text-gray-700 font-bold py-1.5 rounded text-xs uppercase hover:bg-gray-100 transition shadow-sm"
+        className="text-white text-[11px] font-bold bg-black/20 hover:bg-black/40 px-2 py-0.5 rounded-sm transition-colors whitespace-nowrap"
       >
-        View More {title}
+        View All »
+      </Link>
+    </div>
+
+    {/* Post list */}
+    <ul className="divide-y divide-gray-100">
+      {posts.map((post: any, i: number) => (
+        <li
+          key={post._id}
+          className={`group hover:bg-orange-50 transition-colors${i >= mobileLimit ? " hidden md:block" : ""}`}
+        >
+          <Link
+            href={`/post/${post.slug}`}
+            className="flex items-start gap-2 px-3 py-2 text-[13px] text-[#1a56db] hover:text-[#f97316] leading-snug"
+          >
+            <span className="text-[#f97316] shrink-0 mt-0.5 text-[10px]">▶</span>
+            <span className="group-hover:underline underline-offset-2">{post.title}</span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+
+    {/* Footer */}
+    <div className="border-t border-gray-200 px-3 py-1.5 bg-gray-50">
+      <Link
+        href={link}
+        className="text-[12px] font-bold text-[#f97316] hover:underline"
+      >
+        View All {title} »
       </Link>
     </div>
   </div>
 );
 
-// B. Visual News Card (With Images)
-const VisualCard = ({ post }: { post: any }) => (
-  <Link
-    href={`/post/${post.slug}`}
-    className="group bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition flex flex-col h-full"
+// ── Trending table (like sarkariexaminfo status table) ──
+const TrendingTable = ({ jobs }: { jobs: any[] }) => (
+  <div
+    className="bg-white border border-gray-200 rounded-sm shadow-sm mb-4 overflow-hidden"
+    style={{ fontFamily: "Arial, sans-serif" }}
   >
-    <div className="relative h-40 w-full bg-gray-100">
-      {post.featureImage ? (
-        <Image
-          src={post.featureImage}
-          alt={post.title}
-          fill
-          unoptimized
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-      ) : (
-        <div className="flex items-center justify-center h-full text-gray-300 bg-gray-50">
-          <span className="text-4xl">📰</span>
-        </div>
-      )}
-      <span className="absolute bottom-0 left-0 bg-blue-900 text-white text-[10px] px-2 py-1 font-bold uppercase">
-        {post.category}
-      </span>
+    <div className="bg-[#1b1b1b] px-3 py-2 flex items-center justify-between">
+      <h2 className="text-white font-black text-sm uppercase tracking-wide m-0">
+        🔥 Trending Government Jobs 2026
+      </h2>
+      <Link href="/latest-jobs" className="text-[#f97316] text-[11px] font-bold hover:underline">
+        View All »
+      </Link>
     </div>
-    <div className="p-3">
-      <h3 className="text-sm font-bold text-gray-800 leading-tight group-hover:text-red-600 line-clamp-2">
-        {post.title}
-      </h3>
-      <span className="text-[10px] text-gray-500 mt-2 block">
-        {new Date(post.updatedAt).toLocaleDateString("en-IN")}
-      </span>
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[480px] text-[13px]" style={{ borderCollapse: "collapse" }}>
+        <thead>
+          <tr className="bg-[#f3f4f6]">
+            <th className="text-left px-3 py-2 font-bold text-gray-700 border-b border-gray-200 w-8">#</th>
+            <th className="text-left px-3 py-2 font-bold text-gray-700 border-b border-gray-200">Exam / Post Name</th>
+            <th className="text-center px-3 py-2 font-bold text-gray-700 border-b border-gray-200 whitespace-nowrap">Status</th>
+            <th className="text-center px-3 py-2 font-bold text-gray-700 border-b border-gray-200">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {jobs.slice(0, 10).map((job: any, i: number) => (
+            <tr key={job._id} className={i % 2 === 0 ? "bg-white" : "bg-[#fafafa]"}>
+              <td className="px-3 py-2 text-gray-400 border-b border-gray-100">{i + 1}</td>
+              <td className="px-3 py-2 border-b border-gray-100">
+                <Link href={`/post/${job.slug}`} className="text-[#1a56db] hover:text-[#f97316] font-medium hover:underline">
+                  {job.title}
+                </Link>
+              </td>
+              <td className="px-3 py-2 text-center border-b border-gray-100">
+                <span className="inline-block bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                  Active
+                </span>
+              </td>
+              <td className="px-3 py-2 text-center border-b border-gray-100">
+                <Link
+                  href={`/post/${job.slug}`}
+                  className="inline-block bg-[#f97316] hover:bg-[#ea6c0a] text-white text-[11px] font-bold px-3 py-1 rounded-sm transition-colors"
+                >
+                  View
+                </Link>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
-  </Link>
+  </div>
 );
 
-// C. Quick Links Grid
-const QuickLinksHero = ({ jobs }: { jobs: any[] }) => (
-  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-    {jobs.slice(0, 4).map((job, index) => {
-      const colors = [
-        "bg-red-600 hover:bg-red-700",
-        "bg-blue-600 hover:bg-blue-700",
-        "bg-green-600 hover:bg-green-700",
-        "bg-purple-600 hover:bg-purple-700",
-      ];
-      return (
+// ── Quick nav buttons ──
+const QuickLinks = () => {
+  const links = [
+    { href: "/latest-jobs", label: "Latest Jobs", icon: "💼" },
+    { href: "/result", label: "Sarkari Result", icon: "📋" },
+    { href: "/admit-card", label: "Admit Card", icon: "🪪" },
+    { href: "/answer-key", label: "Answer Key", icon: "🔑" },
+    { href: "/syllabus", label: "Syllabus", icon: "📚" },
+    { href: "/admission", label: "Admission", icon: "🎓" },
+  ];
+  return (
+    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-4">
+      {links.map((l) => (
         <Link
-          key={job._id}
-          href={`/post/${job.slug}`}
-          className={`${colors[index]} text-white text-center p-2 rounded shadow-md font-bold text-xs md:text-sm flex items-center justify-center min-h-[60px] leading-tight transition hover:-translate-y-1`}
+          key={l.href}
+          href={l.href}
+          className="flex flex-col items-center justify-center gap-1 bg-white border-2 border-gray-200 hover:border-[#f97316] hover:bg-orange-50 rounded-sm py-2.5 px-1 text-center transition-colors group"
         >
-          {job.title}
+          <span className="text-xl">{l.icon}</span>
+          <span className="text-[11px] font-bold text-gray-700 group-hover:text-[#f97316] leading-tight">
+            {l.label}
+          </span>
         </Link>
-      );
-    })}
-    <Link
-      href="/result"
-      className="bg-gray-800 text-white text-center p-3 rounded font-bold text-sm flex items-center justify-center hover:bg-black"
-    >
-      Sarkari Result
-    </Link>
-    <Link
-      href="/admit-card"
-      className="bg-gray-800 text-white text-center p-3 rounded font-bold text-sm flex items-center justify-center hover:bg-black"
-    >
-      Admit Card
-    </Link>
-    <Link
-      href="/latest-jobs"
-      className="bg-gray-800 text-white text-center p-3 rounded font-bold text-sm flex items-center justify-center hover:bg-black"
-    >
-      Latest Jobs
-    </Link>
-    <Link
-      href="/answer-key"
-      className="bg-gray-800 text-white text-center p-3 rounded font-bold text-sm flex items-center justify-center hover:bg-black"
-    >
-      Answer Key
-    </Link>
-  </div>
-);
+      ))}
+    </div>
+  );
+};
 
-// D. THE SEO MAGNET BLOCK (Content for Google Bots)
-const SeoContentBlock = () => (
-  <div className="mt-16 bg-white border-t-4 border-blue-900 p-6 md:p-10 text-gray-700">
-    <h1 className="text-2xl md:text-3xl font-black text-blue-900 mb-6 border-b pb-4">
-      Sarkari Result 2026: No. 1 Portal for Sarkari Naukri, Admit Card & Results
-    </h1>
-
-    <div className="prose max-w-none text-sm md:text-base leading-relaxed space-y-6">
-      <p>
-        <strong>Welcome to Sarkari Dekho (Official)</strong> — India’s most
-        trusted education portal for
-        <strong> Sarkari Result</strong>, <strong>Sarkari Naukri 2026</strong>,
-        and Government Job updates. Whether you are a 10th pass student or a
-        Graduate, we provide the fastest updates on
-        <em>
-          UPSC, SSC, Railway (RRB), Banking (IBPS/SBI), Army, Navy, and State
-          Police exams
-        </em>
-        .
-      </p>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-8">
-        <div>
-          <h3 className="text-lg font-bold text-red-600 mb-3">
-            🔥 Trending Exams in 2026
-          </h3>
-          <ul className="list-disc pl-5 space-y-2 text-gray-600">
-            <li>
-              <strong>SSC CGL & CHSL 2026:</strong> Check notification, exam
-              date, and admit card status.
-            </li>
-            <li>
-              <strong>Railway RRB NTPC & Group D:</strong> Upcoming vacancy news
-              and application forms.
-            </li>
-            <li>
-              <strong>UP Police & Bihar Police:</strong> Constable and SI
-              recruitment latest updates.
-            </li>
-            <li>
-              <strong>Teaching Jobs:</strong> CTET, UPTET, Super TET, and BPSC
-              Teacher Phase 4 news.
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h3 className="text-lg font-bold text-red-600 mb-3">
-            📋 What We Provide?
-          </h3>
-          <ul className="list-disc pl-5 space-y-2 text-gray-600">
-            <li>
-              <strong>Sarkari Result:</strong> Fast and direct links to download
-              results.
-            </li>
-            <li>
-              <strong>Admit Card:</strong> Hall tickets for all major
-              competitive exams.
-            </li>
-            <li>
-              <strong>Latest Jobs:</strong> Daily alerts for 10th, 12th, and
-              Graduate pass jobs.
-            </li>
-            <li>
-              <strong>Answer Keys:</strong> Download official answer keys and
-              raise objections.
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <h2 className="text-xl font-bold text-blue-900 mt-6">
-        How to Check Sarkari Result 2026?
+// ── SEO block ──
+const SeoBlock = () => (
+  <div
+    className="mt-4 bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden"
+    style={{ fontFamily: "Arial, sans-serif" }}
+  >
+    <div className="bg-[#1b1b1b] px-3 py-2">
+      <h2 className="text-white font-black text-sm uppercase m-0">
+        About SarkariExamInfo.com
       </h2>
+    </div>
+    <div className="p-4 text-[13px] text-gray-600 leading-relaxed space-y-2">
       <p>
-        Checking your result is easy on Sarkari Dekho. Simply visit our{" "}
-        <strong>"Result"</strong> section, click on your exam name (e.g.,{" "}
-        <em>Bihar Board 10th Result</em> or <em>SSC GD Result</em>), and use the
-        direct official link provided. We also provide PDF lists (Merit Lists)
-        for exams where individual scorecards are not released immediately.
+        <strong className="text-gray-800">SarkariExamInfo.com</strong> भारत का सबसे
+        भरोसेमंद सरकारी जॉब पोर्टल है। यहाँ आपको{" "}
+        <strong className="text-gray-800">Sarkari Result 2026</strong>,{" "}
+        <strong className="text-gray-800">Sarkari Naukri</strong>,{" "}
+        <strong className="text-gray-800">Admit Card</strong>,{" "}
+        <strong className="text-gray-800">Answer Key</strong> और{" "}
+        <strong className="text-gray-800">Syllabus</strong> की सटीक और
+        सबसे तेज़ जानकारी मिलती है।
       </p>
-
-      <h2 className="text-xl font-bold text-blue-900 mt-6">
-        Upcoming Government Jobs in January 2026
-      </h2>
       <p>
-        The year 2026 brings massive opportunities. Major recruitments expected
-        this month include
-        <strong> Indian Post GDS</strong>, <strong>Railway ALP</strong>, and{" "}
-        <strong>Bank PO/Clerk</strong>. Keep visiting this page daily for the
-        latest <em>Rozgar Samachar</em> and Employment News.
+        <strong className="text-gray-800">SSC, UPSC, Railway RRB, Banking
+        IBPS/SBI, Army, Police, Teaching</strong> — सभी सरकारी भर्तियों की
+        जानकारी सबसे पहले पाने के लिए रोज़ विजिट करें।
       </p>
-
-      <div className="bg-gray-50 p-4 rounded border border-gray-200 mt-6">
-        <p className="font-bold text-center text-gray-500 text-xs">
-          Disclaimer: Sarkari Dekho is an information portal and is not
-          affiliated with the central or any state government. Please verify
-          details from official websites.
-        </p>
-      </div>
+      <p className="text-[11px] text-gray-400 border-t border-gray-100 pt-3 mt-1">
+        <strong>Disclaimer:</strong> SarkariExamInfo.com एक स्वतंत्र सूचना पोर्टल
+        है। यह केंद्र या किसी राज्य सरकार से संबद्ध नहीं है। कृपया आधिकारिक
+        वेबसाइट से जानकारी सत्यापित करें।
+      </p>
     </div>
   </div>
 );
-
-// --- MAIN PAGE ---
 
 export default async function Home() {
   const [results, jobs, admitCards, answerKeys, syllabus, admission] =
     await Promise.all([
-      getCategoryPosts("result", 15), // Increased limit for text columns
+      getCategoryPosts("result", 15),
       getCategoryPosts("latest-jobs", 15),
       getCategoryPosts("admit-card", 15),
-      getCategoryPosts("answer-key", 5),
-      getCategoryPosts("syllabus", 5),
-      getCategoryPosts("admission", 5),
+      getCategoryPosts("answer-key", 10),
+      getCategoryPosts("syllabus", 10),
+      getCategoryPosts("admission", 10),
     ]);
 
-  // Combined posts for "Visual Section" (Just grab top 4 from jobs & results)
-  const visualPosts = [...jobs.slice(0, 4), ...results.slice(0, 4)];
-
   const marqueeText = [
-    jobs[0] ? `New: ${jobs[0].title}` : "",
-    results[0] ? `Result: ${results[0].title}` : "",
-    admitCards[0] ? `Admit Card: ${admitCards[0].title}` : "",
+    jobs[0] ? `🔔 New Job: ${jobs[0].title}` : "",
+    results[0] ? `📋 Result Out: ${results[0].title}` : "",
+    admitCards[0] ? `🪪 Admit Card: ${admitCards[0].title}` : "",
+    answerKeys[0] ? `🔑 Answer Key: ${answerKeys[0].title}` : "",
   ]
     .filter(Boolean)
-    .join("  ++++  ");
+    .join("      ◆      ");
 
   return (
-    <div className="max-w-7xl mx-auto px-2 md:px-4 py-4 font-sans bg-gray-50 min-h-screen">
-      {/* 1. Marquee */}
-      <div className="bg-black text-white p-2 mb-4 rounded flex items-center overflow-hidden border-b-4 border-red-600">
-        <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded shrink-0 mr-3 animate-pulse">
-          UPDATE
+    <div
+      className="max-w-6xl mx-auto px-2 sm:px-4 py-3 min-h-screen"
+      style={{ fontFamily: "Arial, sans-serif", background: "#f5f5f5" }}
+    >
+      {/* ── Marquee ticker ── */}
+      <div className="flex items-center bg-white border border-gray-200 rounded-sm mb-3 overflow-hidden shadow-sm">
+        <span className="bg-[#f97316] text-white text-[11px] font-black px-3 py-2 shrink-0 uppercase tracking-wider">
+          Live
         </span>
-        <div className="whitespace-nowrap overflow-hidden w-full">
-          <div className="animate-marquee inline-block text-sm font-bold text-yellow-300">
+        <div className="overflow-hidden flex-1 py-2 px-2 border-l border-gray-200">
+          <div
+            className="whitespace-nowrap text-[#1b1b1b] text-[13px] font-semibold"
+            style={{ animation: "marquee 50s linear infinite" }}
+          >
             {marqueeText}
           </div>
         </div>
       </div>
 
-      {/* 2. Quick Links */}
-      <h2 className="text-center text-xl md:text-2xl font-black text-blue-900 mb-4 uppercase underline decoration-red-600 underline-offset-4">
-        Sarkari Dekho: India's No. 1 Job Portal
-      </h2>
-      <QuickLinksHero jobs={jobs} />
+      {/* ── Quick links ── */}
+      <QuickLinks />
 
-      {/* 3. CORE TEXT COLUMNS (The Traffic Driver) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-        <SarkariColumn title="Result" posts={results} link="/result" />
-        <SarkariColumn
-          title="Admit Card"
-          posts={admitCards}
-          link="/admit-card"
-        />
-        <SarkariColumn title="Latest Jobs" posts={jobs} link="/latest-jobs" />
+      {/* ── Trending table ── */}
+      <TrendingTable jobs={jobs} />
+
+      {/* ── 3-column main boxes ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+        <SectionBox accentColor="#dc2626" title="Latest Jobs" posts={jobs} link="/latest-jobs" />
+        <SectionBox accentColor="#16a34a" title="Sarkari Result" posts={results} link="/result" />
+        <SectionBox accentColor="#2563eb" title="Admit Card" posts={admitCards} link="/admit-card" />
       </div>
 
-      {/* 4. VISUAL NEWS SECTION (New Feature) */}
-      <div className="mb-12">
-        <div className="flex items-center justify-between mb-4 border-b-4 border-purple-600 pb-2">
-          <h2 className="text-xl font-bold text-gray-800 uppercase">
-            Top Visual Updates
-          </h2>
-          <Link
-            href="/latest-jobs"
-            className="text-sm font-bold text-purple-700 hover:underline"
-          >
-            View All Gallery
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {visualPosts.map((post) => (
-            <VisualCard key={post._id.toString()} post={post} />
-          ))}
-        </div>
+      {/* ── 3-column secondary boxes ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+        <SectionBox accentColor="#d97706" title="Answer Key" posts={answerKeys} link="/answer-key" mobileLimit={6} />
+        <SectionBox accentColor="#7c3aed" title="Syllabus" posts={syllabus} link="/syllabus" mobileLimit={6} />
+        <SectionBox accentColor="#0f766e" title="Admission" posts={admission} link="/admission" mobileLimit={6} />
       </div>
 
-      {/* 5. UTILITY COLUMNS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-        <div className="bg-white border border-gray-300 rounded p-4">
-          <h3 className="font-bold border-b-2 border-gray-800 pb-2 mb-2 uppercase text-sm">
-            Answer Key
-          </h3>
-          <ul className="space-y-2">
-            {answerKeys.map((p: any) => (
-              <li key={p._id.toString()}>
-                <Link
-                  href={`/post/${p.slug}`}
-                  className="text-sm text-blue-700 hover:text-red-600 block truncate"
-                >
-                  » {p.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="bg-white border border-gray-300 rounded p-4">
-          <h3 className="font-bold border-b-2 border-gray-800 pb-2 mb-2 uppercase text-sm">
-            Syllabus
-          </h3>
-          <ul className="space-y-2">
-            {syllabus.map((p: any) => (
-              <li key={p._id.toString()}>
-                <Link
-                  href={`/post/${p.slug}`}
-                  className="text-sm text-blue-700 hover:text-red-600 block truncate"
-                >
-                  » {p.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="bg-white border border-gray-300 rounded p-4">
-          <h3 className="font-bold border-b-2 border-gray-800 pb-2 mb-2 uppercase text-sm">
-            Admission
-          </h3>
-          <ul className="space-y-2">
-            {admission.map((p: any) => (
-              <li key={p._id.toString()}>
-                <Link
-                  href={`/post/${p.slug}`}
-                  className="text-sm text-blue-700 hover:text-red-600 block truncate"
-                >
-                  » {p.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      {/* ── SEO block ── */}
+      <SeoBlock />
 
-      {/* 6. SEO CONTENT BLOCK */}
-      <SeoContentBlock />
+      <style>{`
+        @keyframes marquee {
+          0%   { transform: translateX(100%); }
+          100% { transform: translateX(-100%); }
+        }
+      `}</style>
     </div>
   );
 }

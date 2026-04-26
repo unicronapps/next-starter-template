@@ -120,7 +120,7 @@ export default async function CategoryPage({
     // return notFound(); // Uncomment if you want strict 404s
   }
 
-  const data = await res.json();
+  const data = await res.json() as { posts?: typeof posts };
   posts = data.posts || [];
 
   // Helper: New Badge Logic (7 Days)
