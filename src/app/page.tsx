@@ -1,10 +1,13 @@
 import Link from "next/link";
-export const runtime = "edge";
+
+export const dynamic = "force-dynamic";
+
+const API_BASE_URL = "https://sjl6h1nlyh.execute-api.ap-south-1.amazonaws.com";
 
 async function getCategoryPosts(category: string, limit = 15) {
   const params = new URLSearchParams({ category, limit: String(limit) });
   const res = await fetch(
-    `${process.env.API_BASE_URL}/api/category-posts/home?${params.toString()}`,
+    `${API_BASE_URL}/api/category-posts/home?${params.toString()}`,
     { cache: "no-store" }
   );
   if (!res.ok) return [];
