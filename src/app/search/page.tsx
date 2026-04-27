@@ -1,4 +1,6 @@
-export const runtime = "edge"; // 1. REQUIRED for Cloudflare
+export const dynamic = "force-dynamic";
+
+const API_BASE_URL = "https://sjl6h1nlyh.execute-api.ap-south-1.amazonaws.com";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -11,7 +13,7 @@ async function searchPosts(query: string, options?: { revalidate?: number }) {
   const params = new URLSearchParams({ q: query });
 
   const res = await fetch(
-    `${process.env.API_BASE_URL}/api/search-posts?${params.toString()}`,
+    `${API_BASE_URL}/api/search-posts?${params.toString()}`,
     {
       // In Next.js 15, fetch is not cached by default, so "no-store" is redundant but safe.
       // We keep the logic to allow ISR via the options param.

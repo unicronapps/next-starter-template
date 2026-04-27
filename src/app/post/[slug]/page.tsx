@@ -1,4 +1,7 @@
-export const runtime = "edge"; // 1. REQUIRED for Cloudflare
+export const dynamic = "force-dynamic";
+
+const API_BASE_URL = "https://sjl6h1nlyh.execute-api.ap-south-1.amazonaws.com";
+const SITE_URL = "https://sarkariexaminfo.com";
 
 // import dbConnect from "@/lib/mongodb";
 import { notFound } from "next/navigation";
@@ -16,10 +19,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // 3. AWAIT PARAMS before using them
   const resolvedParams = await params;
   console.log(
-    `${process.env.API_BASE_URL}/api/post-by-slug?slug=${resolvedParams.slug}`,
+    `${API_BASE_URL}/api/post-by-slug?slug=${resolvedParams.slug}`,
   );
   const res = await fetch(
-    `${process.env.API_BASE_URL}/api/post-by-slug?slug=${resolvedParams.slug}`,
+    `${API_BASE_URL}/api/post-by-slug?slug=${resolvedParams.slug}`,
     { cache: "no-store" },
   );
 
@@ -38,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: post.metaDescription,
     keywords: (post as any).tags || [],
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/post/${resolvedParams.slug}`,
+      canonical: `${SITE_URL}/post/${resolvedParams.slug}`,
     },
     openGraph: {
       title: post.title,
@@ -74,7 +77,7 @@ async function getRelatedPosts(
   }
 
   const res = await fetch(
-    `${process.env.API_BASE_URL}/api/related-posts?${params.toString()}`,
+    `${API_BASE_URL}/api/related-posts?${params.toString()}`,
     {
       cache: "no-store", // or revalidate
     },
@@ -97,7 +100,7 @@ export default async function PostPage({ params }: Props) {
 
   // Fetch Post Data by Slug
   const res = await fetch(
-    `${process.env.API_BASE_URL}/api/post-by-slug?slug=${resolvedParams.slug}`,
+    `${API_BASE_URL}/api/post-by-slug?slug=${resolvedParams.slug}`,
     { next: { revalidate: 60 } },
   );
   const response: any = await res.json();
@@ -134,19 +137,19 @@ export default async function PostPage({ params }: Props) {
             "@type": "ListItem",
             position: 1,
             name: "Home",
-            item: `${process.env.NEXT_PUBLIC_SITE_URL}`,
+            item: `${SITE_URL}`,
           },
           {
             "@type": "ListItem",
             position: 2,
             name: post.category,
-            item: `${process.env.NEXT_PUBLIC_SITE_URL}/${post.category}`,
+            item: `${SITE_URL}/${post.category}`,
           },
           {
             "@type": "ListItem",
             position: 3,
             name: post.title,
-            item: `${process.env.NEXT_PUBLIC_SITE_URL}/post/${post.slug}`,
+            item: `${SITE_URL}/post/${post.slug}`,
           },
         ],
       },

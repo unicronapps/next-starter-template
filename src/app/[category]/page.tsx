@@ -1,4 +1,6 @@
-export const runtime = "edge"; // 1. REQUIRED for Cloudflare
+export const dynamic = "force-dynamic";
+
+const API_BASE_URL = "https://sjl6h1nlyh.execute-api.ap-south-1.amazonaws.com";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -107,7 +109,7 @@ export default async function CategoryPage({
   let posts: any[] = [];
 
   const res = await fetch(
-    `${process.env.API_BASE_URL}/api/category-posts?category=${category}`,
+    `${API_BASE_URL}/api/category-posts?category=${category}`,
     {
       // OPTIONAL: Switch to ISR for better performance
       // next: { revalidate: 60 }
