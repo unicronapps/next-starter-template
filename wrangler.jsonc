@@ -15,5 +15,9 @@
 	"observability": {
 		"enabled": true
 	},
-	"upload_source_maps": true
+	"upload_source_maps": true,
+	"vars": {
+		"API_BASE_URL": "https://sjl6h1nlyh.execute-api.ap-south-1.amazonaws.com",
+		"NEXT_PUBLIC_SITE_URL": "https://next-starter-template.unicronapps.workers.dev"
+	}
 }
