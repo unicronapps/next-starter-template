@@ -1,15 +1,8 @@
 // app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
-
-const hindiFont = Noto_Sans_Devanagari({
-  subsets: ["devanagari"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-hindi",
-});
 
 const SITE_URL = "https://sarkariexaminfo.com";
 const SITE_NAME = "SarkariExamInfo";
@@ -176,7 +169,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   };
 
   return (
-    <html lang="hi" className={hindiFont.variable}>
+    <html lang="hi">
       <head>
         <Script
           id="schema-json"
@@ -184,7 +177,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="bg-[#f5f5f5] text-gray-900 font-hindi flex flex-col min-h-screen">
+      <body className="bg-[#f5f5f5] text-gray-900 flex flex-col min-h-screen" style={{ fontFamily: "'Noto Sans Devanagari', Arial, sans-serif" }}>
         <Navbar />
 
         <main className="flex-grow pb-6 w-full" style={{ fontFamily: "Arial, sans-serif" }}>
